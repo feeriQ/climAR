@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estaciones SMN - Normales 1991-2020</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+        }
+        
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        
+        /* Panel de control */
+        .panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        
+        .panel h2 {
+            color: #1a3a5c;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .panel .subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .panel input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .panel input:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        
+        .panel select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        
+        .panel .stats {
+            font-size: 13px;
+            color: #666;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        
+        .panel .stats span {
+            display: block;
+            margin: 2px 0;
+        }
+        
+        /* Popup personalizado */
+        .popup-contenido {
+            max-width: 380px;
+            max-height: 420px;
+            overflow: auto;
+        }
+        
+        .popup-contenido h4 {
+            color: #1a3a5c;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            border-bottom: 2px solid #4a90d9;
+            padding-bottom: 5px;
+        }
+        
+        .popup-contenido select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        
+        .popup-contenido table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+        
+        .popup-contenido th {
+            background: #f0f4f8;
+            padding: 4px;
+            border: 1px solid #ddd;
+            font-size: 11px;
+        }
+        
+        .popup-contenido td {
+            padding: 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 11px;
+        }
+        
+        .popup-contenido .mes-label {
+            font-weight: bold;
+            background: #f8f9fa;
+        }
+        
+        .popup-contenido .stats-mini {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            background: #f5f7fa;
+            padding: 5px 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+        
+        .popup-contenido .stats-mini span {
+            font-weight: bold;
+        }
+        
+        /* Leyenda */
+        .leyenda {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .leyenda strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .leyenda .prov-item {
+            padding: 2px 0;
+            font-size: 11px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .panel {
+                top: 10px;
+                left: 10px;
+                max-width: 250px;
+                padding: 12px 15px;
+            }
+            
+            .panel h2 {
+                font-size: 16px;
+            }
+            
+            .popup-contenido {
+                max-width: 280px;
+                max-height: 350px;
+            }
+        }
+        
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-size: 20px;
+            color: #1a3a5c;
+        }
+        
+        .loader.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loader -->
+<div class="loader" id="loader">
+    <div>
+        <div style="text-align: center; font-size: 40px; margin-bottom: 10px;">🌡️</div>
+        <div>Cargando estaciones...</div>
+    </div>
+</div>
+
+<!-- Mapa -->
+<div id="map"></div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // ============================================
+    // 1. CONFIGURACIÓN INICIAL
+    // ============================================
+    
+    // Centrar mapa en Argentina
+    const CENTER = [-38.4161, -63.6167];
+    const ZOOM = 4;
+    
+    // Inicializar mapa
+    const map = L.map('map').setView(CENTER, ZOOM);
+    
+    // Capa de mapa base
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Variable global para almacenar datos
+    let todasLasEstaciones = [];
+    let marcadores = [];
+    
+    // ============================================
+    // 2. FUNCIONES AUXILIARES
+    // ============================================
+    
+    // Crear ícono personalizado para marcadores
+    function crearIcono(provincia) {
+        const colores = {
+            'ANTARTIDA': '#4a90d9',
+            'BUENOS AIRES': '#2ecc71',
+            'CORDOBA': '#e67e22',
+            'MENDOZA': '#e74c3c',
+            'SANTA FE': '#3498db',
+            'SALTA': '#9b59b6',
+            'TUCUMAN': '#1abc9c',
+            'CHUBUT': '#f39c12',
+            'NEUQUEN': '#2c3e50',
+            'RIO NEGRO': '#16a085',
+            'SANTA CRUZ': '#27ae60',
+            'ENTRE RIOS': '#2980b9',
+            'CORRIENTES': '#8e44ad',
+            'MISIONES': '#d35400',
+            'FORMOSA': '#c0392b',
+            'CHACO': '#f1c40f',
+            'SANTIAGO DEL ESTERO': '#2ecc71',
+            'CATAMARCA': '#e67e22',
+            'LA RIOJA': '#e74c3c',
+            'SAN JUAN': '#3498db',
+            'SAN LUIS': '#9b59b6',
+            'LA PAMPA': '#1abc9c',
+            'TIERRA DEL FUEGO': '#f39c12',
+            'JUJUY': '#2c3e50'
+        };
+        
+        const color = colores[provincia] || '#95a5a6';
+        
+        return L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="
+                background-color: ${color};
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            "></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        });
+    }
+    
+    // Crear contenido del popup
+    function crearPopup(estacion) {
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const variables = Object.keys(estacion.variables);
+        const primeraVariable = variables.length > 0 ? variables[0] : '';
+        
+        // Generar opciones del select
+        let optionsHTML = variables.map(v => 
+            `<option value="${v}">${v}</option>`
+        ).join('');
+        
+        // Crear tabla de valores
+        function generarTabla(variable) {
+            const valores = estacion.variables[variable] || [];
+            let html = '<table>';
+            html += '<thead><tr><th>Mes</th>';
+            meses.forEach(m => {
+                html += `<th>${m}</th>`;
+            });
+            html += '</tr></thead><tbody><tr>';
+            html += '<td class="mes-label">Valor</td>';
+            valores.forEach(v => {
+                html += `<td>${v !== null && !isNaN(v) ? v : '-'}</td>`;
+            });
+            html += '</tr></tbody></table>';
+            return html;
+        }
+        
+        // Calcular estadísticas
+        function calcularStats(variable) {
+            const valores = estacion.variables[variable] || [];
+            const validos = valores.filter(v => v !== null && !isNaN(v));
+            if (validos.length === 0) return null;
+            const suma = validos.reduce((a, b) => a + b, 0);
+            return {
+                promedio: (suma / validos.length).toFixed(1),
+                max: Math.max(...validos),
+                min: Math.min(...validos)
+            };
+        }
+        
+        const stats = calcularStats(primeraVariable);
+        
+        let statsHTML = '';
+        if (stats) {
+            statsHTML = `
+                <div class="stats-mini">
+                    <span>📊 Prom: ${stats.promedio}</span>
+                    <span>▲ Máx: ${stats.max}</span>
+                    <span>▼ Mín: ${stats.min}</span>
+                </div>
+            `;
+        }
+        
+        const provinciaInfo = estacion.provincia ? `📍 ${estacion.provincia}` : '';
+        const alturaInfo = estacion.altura ? `🏔️ ${estacion.altura}m` : '';
+        
+        return `
+            <div class="popup-contenido">
+                <h4>${estacion.nombre}</h4>
+                <div style="font-size: 11px; color: #666; margin-bottom: 8px;">
+                    ${provinciaInfo} ${alturaInfo ? '| ' + alturaInfo : ''}
+                </div>
+                <select id="popup-select-${estacion.nombre.replace(/\s/g, '_')}" 
+                        onchange="actualizarPopup('${estacion.nombre.replace(/'/g, "\\'")}')">
+                    ${optionsHTML}
+                </select>
+                ${statsHTML}
+                <div id="popup-tabla-${estacion.nombre.replace(/\s/g, '_')}">
+                    ${generarTabla(primeraVariable)}
+                </div>
+                <div style="font-size: 10px; color: #999; margin-top: 6px;">
+                    📅 Período 1991-2020
+                </div>
+            </div>
+        `;
+    }
+    
+    // ============================================
+    // 3. FUNCIÓN PARA ACTUALIZAR POPUP (al cambiar variable)
+    // ============================================
+    
+    window.actualizarPopup = function(nombreEstacion) {
+        const estacion = todasLasEstaciones.find(e => e.nombre === nombreEstacion);
+        if (!estacion) return;
+        
+        const selectId = `popup-select-${nombreEstacion.replace(/\s/g, '_')}`;
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        const variable = select.value;
+        const tablaId = `popup-tabla-${nombreEstacion.replace(/\s/g, '_')}`;
+        const tablaDiv = document.getElementById(tablaId);
+        if (!tablaDiv) return;
+        
+        // Generar nueva tabla
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const valores = estacion.variables[variable] || [];
+        
+        let html = '<table><thead><tr><th>Mes</th>';
+        meses.forEach(m => {
+            html += `<th>${m}</th>`;
+        });
+        html += '</tr></thead><tbody><tr>';
+        html += '<td class="mes-label">Valor</td>';
+        valores.forEach(v => {
+            html += `<td>${v !== null && !isNaN(v) ? v : '-'}</td>`;
+        });
+        html += '</tr></tbody></table>';
+        
+        // Actualizar estadísticas
+        const validos = valores.filter(v => v !== null && !isNaN(v));
+        const statsDiv = tablaDiv.parentElement.querySelector('.stats-mini');
+        if (statsDiv && validos.length > 0) {
+            const suma = validos.reduce((a, b) => a + b, 0);
+            const promedio = (suma / validos.length).toFixed(1);
+            const max = Math.max(...validos);
+            const min = Math.min(...validos);
+            statsDiv.innerHTML = `
+                <span>📊 Prom: ${promedio}</span>
+                <span>▲ Máx: ${max}</span>
+                <span>▼ Mín: ${min}</span>
+            `;
+        }
+        
+        tablaDiv.innerHTML = html;
+    };
+    
+    // ============================================
+    // 4. CARGAR DATOS Y CREAR MARCADORES
+    // ============================================
+    
+    function cargarDatos() {
+        fetch('datos_completos.json')
+            .then(response => response.json())
+            .then(data => {
+                todasLasEstaciones = data;
+                
+                if (data.length === 0) {
+                    alert('No se encontraron datos. Asegúrate de que datos_completos.json existe.');
+                    document.getElementById('loader').classList.add('hidden');
+                    return;
+                }
+                
+                // Obtener provincias únicas para el filtro
+                const provincias = [...new Set(data.map(e => e.provincia).filter(p => p))].sort();
+                
+                // Poblar select de provincias
+                const selectProv = document.getElementById('filtro-provincia');
+                provincias.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p;
+                    option.textContent = p;
+                    selectProv.appendChild(option);
+                });
+                
+                // Actualizar contador
+                document.getElementById('total-estaciones').textContent = data.length;
+                document.getElementById('total-provincias').textContent = provincias.length;
+                
+                // Crear marcadores
+                crearMarcadores(data);
+                
+                // Ocultar loader
+                document.getElementById('loader').classList.add('hidden');
+            })
+            .catch(error => {
+                console.error('Error cargando datos:', error);
+                alert('Error al cargar los datos. Asegúrate de que datos_completos.json existe.');
+                document.getElementById('loader').classList.add('hidden');
+            });
+    }
+    
+    function crearMarcadores(estaciones) {
+        // Limpiar marcadores existentes
+        marcadores.forEach(m => map.removeLayer(m));
+        marcadores = [];
+        
+        estaciones.forEach(estacion => {
+            if (!estacion.lat || !estacion.lng) return;
+            
+            const icono = crearIcono(estacion.provincia);
+            const marker = L.marker([estacion.lat, estacion.lng], {
+                icon: icono
+            });
+            
+            const popupContent = crearPopup(estacion);
+            marker.bindPopup(popupContent, {
+                maxWidth: 400,
+                className: 'custom-popup'
+            });
+            
+            marker.addTo(map);
+            marcadores.push(marker);
+        });
+    }
+    
+    // ============================================
+    // 5. FILTROS
+    // ============================================
+    
+    function filtrarEstaciones() {
+        const busqueda = document.getElementById('busqueda').value.toLowerCase().trim();
+        const provincia = document.getElementById('filtro-provincia').value;
+        
+        let filtradas = todasLasEstaciones;
+        
+        if (busqueda) {
+            filtradas = filtradas.filter(e => 
+                e.nombre.toLowerCase().includes(busqueda)
+            );
+        }
+        
+        if (provincia && provincia !== 'todas') {
+            filtradas = filtradas.filter(e => e.provincia === provincia);
+        }
+        
+        document.getElementById('total-estaciones').textContent = filtradas.length;
+        crearMarcadores(filtradas);
+        
+        // Si hay una estación filtrada, hacer zoom
+        if (filtradas.length === 1 && filtradas[0].lat && filtradas[0].lng) {
+            map.setView([filtradas[0].lat, filtradas[0].lng], 8);
+        } else if (filtradas.length > 0) {
+            // Ajustar zoom para mostrar todas
+            const group = L.featureGroup(marcadores);
+            if (marcadores.length > 0) {
+                map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            }
+        }
+    }
+    
+    // ============================================
+    // 6. INICIALIZAR
+    // ============================================
+    
+    // Esperar a que el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        // Agregar controles al DOM
+        const panelHTML = `
+            <div class="panel">
+                <h2>🌡️ Estaciones SMN</h2>
+                <div class="subtitle">Normales 1991-2020</div>
+                
+                <input type="text" 
+                       id="busqueda" 
+                       placeholder="🔍 Buscar estación..." 
+                       oninput="filtrarEstaciones()">
+                
+                <select id="filtro-provincia" onchange="filtrarEstaciones()">
+                    <option value="todas">Todas las provincias</option>
+                </select>
+                
+                <div class="stats">
+                    <span>📍 <span id="total-estaciones">0</span> estaciones</span>
+                    <span>🏛️ <span id="total-provincias">0</span> provincias</span>
+                </div>
+            </div>
+            
+            <div class="leyenda" id="leyenda">
+                <strong>🗺️ Provincias</strong>
+                <div id="lista-provincias"></div>
+            </div>
+        `;
+        
+        // Insertar panel en el mapa (usando insertAdjacentHTML en el body)
+        document.body.insertAdjacentHTML('beforeend', panelHTML);
+        
+        // Cargar datos
+        cargarDatos();
+    });
+</script>
+
+</body>
+</html>
