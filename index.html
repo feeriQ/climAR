@@ -351,14 +351,16 @@
 <div class="modal-info" id="modal-info" onclick="cerrarInfo(event)">
     <div class="modal-contenido" onclick="event.stopPropagation()">
         <button class="btn-cerrar" onclick="toggleInfo()">✖</button>
-        <h2>🌡️ climAR_9120</h2>
         
-        <h3>📊 Resumen</h3>
-        <p><strong id="info-total-estaciones">0</strong> estaciones meteorológicas</p>
-        <p><strong id="info-total-provincias">0</strong> provincias representadas</p>
-        
-        <h3>📅 Período</h3>
-        <p>Estadísticas Climatológicas Normales <strong>1991-2020</strong></p>
+        <h2>🌡️ climAR-9120</h2>
+       
+        <p style="font-size:14px; line-height:1.6;">
+    🌡️ 🌧️ Estadísticas Climatológicas Normales <strong>1991-2020</strong> descargadas del SMN (Servicio Meteorológico Nacional) de Argentina.
+</p>
+
+<p style="font-size:14px; line-height:1.6;">
+    🗺️ <strong id="info-total-estaciones">0</strong> estaciones meteorológicas, con entre <strong>4</strong> y <strong>8</strong> variables meteorológicas con datos cada una.
+</p>
         
         <h3>🚦 Estado de las estaciones</h3>
         <p style="font-size:13px;">
@@ -367,7 +369,7 @@
             <span style="color:#c0392b; font-weight:bold;">🔴 Cerrada:</span> Estación fuera de servicio.
         </p>
 
-        <h3>🏛️ Estaciones por provincia</h3>
+        <h3>🧮 Estaciones por provincia</h3>
         <ul id="info-lista-provincias"></ul>
 
         <div class="fuente">
@@ -378,7 +380,7 @@
             Servicio Meteorológico Nacional [SMN] (2023). <em>Estadísticas Climatológicas Normales: República Argentina - Período 1991-2020</em>. SMN, 847 pp.<br>
             <strong>URL del Repositorio SMN:</strong> <a href="https://repositorio.smn.gob.ar/handle/20.500.12160/2506" target="_blank" rel="noopener">https://repositorio.smn.gob.ar/handle/20.500.12160/2506</a><br>
             <br>
-            <strong>Mapa base:</strong> Argenmap Topográfico del Instituto Geográfico Nacional [IGN] - Argentina<br>
+            <strong>Mapa base:</strong> Argenmap Oscuro del Instituto Geográfico Nacional [IGN] - Argentina<br>
             <strong>Más información:</strong> <a href="https://www.ign.gob.ar/odc-12-Ortiz" target="_blank" rel="noopener">https://www.ign.gob.ar/odc-12-Ortiz</a>
         </div>
     </div>
@@ -774,23 +776,34 @@
         }
     };
     
-    function actualizarInfo() {
-        document.getElementById('info-total-estaciones').textContent = todasLasEstaciones.length;
-        
-        const conteo = {};
-        todasLasEstaciones.forEach(e => {
-            const prov = e.provincia || 'SIN PROVINCIA';
-            conteo[prov] = (conteo[prov] || 0) + 1;
-        });
-        
-        document.getElementById('info-total-provincias').textContent = Object.keys(conteo).length;
-        
-        const provinciasOrdenadas = Object.keys(conteo).sort();
-        const lista = document.getElementById('info-lista-provincias');
+   function actualizarInfo() {
+    document.getElementById('info-total-estaciones').textContent = todasLasEstaciones.length;
+    
+    // Contar variables únicas (las que aparecen al menos en una estación)
+    const variablesUnicas = new Set();
+    todasLasEstaciones.forEach(e => {
+        if (e.variables) {
+            Object.keys(e.variables).forEach(v => variablesUnicas.add(v));
+        }
+    });
+    document.getElementById('info-total-variables').textContent = variablesUnicas.size;
+    
+    // Conteo por provincia
+    const conteo = {};
+    todasLasEstaciones.forEach(e => {
+        const prov = e.provincia || 'SIN PROVINCIA';
+        conteo[prov] = (conteo[prov] || 0) + 1;
+    });
+    
+    // Lista de provincias
+    const provinciasOrdenadas = Object.keys(conteo).sort();
+    const lista = document.getElementById('info-lista-provincias');
+    if (lista) {
         lista.innerHTML = provinciasOrdenadas.map(prov => 
             `<li><strong>${prov}:</strong> ${conteo[prov]}</li>`
         ).join('');
     }
+}
     
     // ============================================
     // 8. CARGAR DATOS Y CREAR MARCADORES
