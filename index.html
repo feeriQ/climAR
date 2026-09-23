@@ -302,13 +302,21 @@
         <h3>📅 Período</h3>
         <p>Estadísticas Climatológicas Normales <strong>1991-2020</strong></p>
         
-        <h3>🏛️ Estaciones por provincia</h3>
-        <ul id="info-lista-provincias"></ul>
-        
-        <div class="fuente">
-            <strong>Fuente:</strong> Servicio Meteorológico Nacional (SMN) de Argentina<br>
-            <strong>Descarga:</strong> Junio 2026
-        </div>
+        <h3>🚦 Estado de las estaciones</h3>
+<p style="font-size:13px;">
+    <span style="color:#c0392b; font-weight:bold;">🔴 Cerrada</span> — Estación fuera de servicio<br>
+    <span style="color:#b9770e; font-weight:bold;">🟡 Período reducido</span> — El SMN indica que las estadísticas se confeccionaron con un período algo menor a 1991-2020<br>
+    <span style="color:#27ae60; font-weight:bold;">🟢 Activa</span> — Sin cartel en el popup
+</p>
+
+<h3>🏛️ Estaciones por provincia</h3>
+<ul id="info-lista-provincias"></ul>
+
+<div class="fuente">
+    <strong>Cita:</strong> Servicio Meteorológico Nacional, 2023: Estadísticas Climatológicas Normales: República Argentina - Período 1991-2020. SMN, 847 pp.<br>
+    <strong>Fuente:</strong> <a href="https://repositorio.smn.gob.ar/handle/20.500.12160/2506" target="_blank" rel="noopener">Repositorio SMN</a><br>
+    <strong>Descarga de datos:</strong> 23 de junio de 2026
+</div>
     </div>
 </div>
 
@@ -321,6 +329,13 @@
     
     const CENTER = [-38.4161, -63.6167];
     const ZOOM = 4;
+
+    // Estaciones cerradas según Wikipedia
+// Fuente: https://es.wikipedia.org/wiki/Anexo:Estaciones_meteorológicas_en_Argentina
+const ESTACIONES_CERRADAS = {
+    'CORONEL PRINGLES AERO*': 2023,
+    'SAN MIGUEL*': 2017
+};
     
     const map = L.map('map', { attributionControl: false, zoomControl: false }).setView(CENTER, ZOOM);
     
@@ -433,15 +448,27 @@
             `;
         }
         
-        const provinciaInfo = estacion.provincia ? `📍 ${estacion.provincia}` : '';
-        const alturaInfo = estacion.altura ? `🏔️ ${estacion.altura}m` : '';
-        
-        return `
-            <div class="popup-contenido">
-                <h4>${estacion.nombre}</h4>
-                <div style="font-size: 11px; color: #666; margin-bottom: 8px;">
-                    ${provinciaInfo} ${alturaInfo ? '| ' + alturaInfo : ''}
-                </div>
+       const provinciaInfo = estacion.provincia ? `📍 ${estacion.provincia}` : '';
+const alturaInfo = estacion.altura ? `🏔️ ${estacion.altura}m` : '';
+
+// Cartel solo si la estación está cerrada o tiene período reducido
+const cerrada = ESTACIONES_CERRADAS[estacion.nombre];
+const tieneAsterisco = estacion.nombre.includes('*');
+
+let cartelEstado = '';
+if (cerrada) {
+    cartelEstado = `<div style="font-size:11px; color:#c0392b; background:#fdecea; padding:4px 6px; border-radius:4px; margin-bottom:8px;">🔴 Cerrada en ${cerrada}</div>`;
+} else if (tieneAsterisco) {
+    cartelEstado = `<div style="font-size:11px; color:#b9770e; background:#fef5e7; padding:4px 6px; border-radius:4px; margin-bottom:8px;">🟡 Período algo menor a 1991-2020</div>`;
+}
+
+return `
+    <div class="popup-contenido">
+        <h4>${estacion.nombre}</h4>
+        <div style="font-size: 11px; color: #666; margin-bottom: 8px;">
+            ${provinciaInfo} ${alturaInfo ? '| ' + alturaInfo : ''}
+        </div>
+        ${cartelEstado}
                 <select id="popup-select-${estacion.nombre.replace(/\s/g, '_')}" 
                         onchange="actualizarPopup('${estacion.nombre.replace(/'/g, "\\'")}')">
                     ${optionsHTML}
