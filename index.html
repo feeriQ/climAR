@@ -241,12 +241,13 @@
     const ZOOM = 4;
     
     // Inicializar mapa
-    const map = L.map('map', { attributionControl: false }).setView(CENTER, ZOOM);
+    const map = L.map('map', { attributionControl: false, zoomControl: false }).setView(CENTER, ZOOM);
     
     // Capa de mapa base
-L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/argenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png', {
-    maxZoom: 18
-}).addTo(map);
+    L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png', {
+       attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
+       maxZoom: 18
+       }).addTo(map);
     
     // Variable global para almacenar datos
     let todasLasEstaciones = [];
