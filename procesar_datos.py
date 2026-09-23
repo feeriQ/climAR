@@ -56,6 +56,33 @@ def procesar_coordenadas(archivo):
             "provincia": provincia,
         }
 
+# Arreglo manual para estaciones con nombres rotos
+coordenadas['PRESIDENCIA ROQUE SAENZ PEÑA AERO'] = {
+    'lat': -26.7333,
+    'lng': -60.4833,
+    'altura': 93,
+    'provincia': 'CHACO'
+}
+
+# Estaciones que no están en el archivo de coordenadas del SMN
+coordenadas['EL TRÉBOL'] = {
+    'lat': -32.202,
+    'lng': -61.704 ,
+    'altura': 96,
+    'provincia': 'SANTA FE'
+}
+coordenadas['SAN MIGUEL'] = {
+    'lat': -34.55569794177408, 
+    'lng': -58.730781460405474,
+    'altura': 26,
+    'provincia': 'BUENOS AIRES'
+}
+coordenadas['CORONEL PRINGLES AERO'] = {
+    'lat': -38.006449896918674, 
+    'lng': -61.33192014759799,
+    'altura': 233,
+    'provincia': 'BUENOS AIRES'
+}
     return coordenadas
 
 
