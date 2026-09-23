@@ -302,11 +302,11 @@
         <h3>📅 Período</h3>
         <p>Estadísticas Climatológicas Normales <strong>1991-2020</strong></p>
         
-        <h3>🚦 Estado de las estaciones</h3>
+      <h3>🚦 Estado de las estaciones</h3>
 <p style="font-size:13px;">
-    <span style="color:#c0392b; font-weight:bold;">🔴 Cerrada</span> — Estación fuera de servicio<br>
-    <span style="color:#b9770e; font-weight:bold;">🟡 Período reducido</span> — El SMN indica que las estadísticas se confeccionaron con un período algo menor a 1991-2020<br>
-    <span style="color:#27ae60; font-weight:bold;">🟢 Activa</span> — Sin cartel en el popup
+    <span style="color:#27ae60; font-weight:bold;">🟢 Activa:</span> Estación en funcionamiento (a junio 2026).<br>
+    <span style="color:#e67e22; font-weight:bold;">🟡 Período reducido:</span> El SMN indica que las estadísticas se confeccionaron con un período algo menor a 1991-2020.<br>
+    <span style="color:#c0392b; font-weight:bold;">🔴 Cerrada:</span> Estación fuera de servicio.
 </p>
 
 <h3>🏛️ Estaciones por provincia</h3>
@@ -353,50 +353,43 @@ const ESTACIONES_CERRADAS = {
     // 2. FUNCIONES AUXILIARES
     // ============================================
     
-    function crearIcono(provincia) {
-        const colores = {
-            'ANTARTIDA': '#4a90d9',
-            'BUENOS AIRES': '#2ecc71',
-            'CORDOBA': '#e67e22',
-            'MENDOZA': '#e74c3c',
-            'SANTA FE': '#3498db',
-            'SALTA': '#9b59b6',
-            'TUCUMAN': '#1abc9c',
-            'CHUBUT': '#f39c12',
-            'NEUQUEN': '#2c3e50',
-            'RIO NEGRO': '#16a085',
-            'SANTA CRUZ': '#27ae60',
-            'ENTRE RIOS': '#2980b9',
-            'CORRIENTES': '#8e44ad',
-            'MISIONES': '#d35400',
-            'FORMOSA': '#c0392b',
-            'CHACO': '#f1c40f',
-            'SANTIAGO DEL ESTERO': '#2ecc71',
-            'CATAMARCA': '#e67e22',
-            'LA RIOJA': '#e74c3c',
-            'SAN JUAN': '#3498db',
-            'SAN LUIS': '#9b59b6',
-            'LA PAMPA': '#1abc9c',
-            'TIERRA DEL FUEGO': '#f39c12',
-            'JUJUY': '#2c3e50'
-        };
-        
-        const color = colores[provincia] || '#95a5a6';
-        
-        return L.divIcon({
-            className: 'custom-marker',
-            html: `<div style="
-                background-color: ${color};
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                border: 2px solid white;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            "></div>`,
-            iconSize: [12, 12],
-            iconAnchor: [6, 6]
-        });
+   function crearIcono(estacion) {
+    // Estaciones cerradas conocidas
+    const CERRADAS = {
+        'CORONEL PRINGLES AERO*': 2023,
+        'SAN MIGUEL*': 2017
+    };
+    
+    let color, borde;
+    
+    if (CERRADAS[estacion.nombre]) {
+        // 🔴 Cerrada
+        color = '#c0392b';
+        borde = '#7b241c';
+    } else if (estacion.nombre.includes('*')) {
+        // 🟡 Período reducido
+        color = '#e67e22';
+        borde = '#a04000';
+    } else {
+        // 🟢 Activa
+        color = '#27ae60';
+        borde = '#196f3d';
     }
+    
+    return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="
+            background-color: ${color};
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid ${borde};
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        "></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+    });
+}
     
     function crearPopup(estacion) {
         const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -595,7 +588,7 @@ return `
         estaciones.forEach(estacion => {
             if (!estacion.lat || !estacion.lng) return;
             
-            const icono = crearIcono(estacion.provincia);
+            const icono = crearIcono(estacion);
             const marker = L.marker([estacion.lat, estacion.lng], {
                 icon: icono
             });
