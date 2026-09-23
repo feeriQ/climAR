@@ -246,7 +246,8 @@
     // Capa de mapa base
     L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png', {
        attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
-       maxZoom: 18
+        minZoom: 3,
+        maxZoom: 18
        }).addTo(map);
     
     // Variable global para almacenar datos
