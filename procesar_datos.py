@@ -115,15 +115,19 @@ def combinar_datos(datos_climaticos, coordenadas):
                 coordenada_encontrada = coord_data
                 break
         
-        if coordenada_encontrada:
-            datos_combinados.append({
-                'nombre': estacion_clima,
-                'lat': coordenada_encontrada['lat'],
-                'lng': coordenada_encontrada['lng'],
-                'altura': coordenada_encontrada['altura'],
-                'provincia': coordenada_encontrada['provincia'],
-                'variables': variables
-            })
+       if coordenada_encontrada:
+    provincia = coordenada_encontrada['provincia']
+    if provincia == 'ANTARTIDA':
+        provincia = 'TIERRA DEL FUEGO'
+    
+    datos_combinados.append({
+        'nombre': estacion_clima,
+        'lat': coordenada_encontrada['lat'],
+        'lng': coordenada_encontrada['lng'],
+        'altura': coordenada_encontrada['altura'],
+        'provincia': provincia,
+        'variables': variables
+    })
         else:
             no_encontradas.append(estacion_clima)
     
