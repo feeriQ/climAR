@@ -142,11 +142,8 @@ def combinar_datos(datos_climaticos, coordenadas):
 
     if no_encontradas:
         print(f"\n⚠️ {len(no_encontradas)} estaciones sin coordenadas:")
-        for est in no_encontradas[:5]:
-            print(f"   - {est}")
-        if len(no_encontradas) > 5:
-            print(f"   ... y {len(no_encontradas) - 5} más")
-
+        for est in no_encontradas:
+            
     return datos_combinados
 
 
