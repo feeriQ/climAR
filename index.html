@@ -404,7 +404,7 @@
     const map = L.map('map', { attributionControl: false, zoomControl: false }).setView(CENTER, ZOOM);
     
     // Capa de mapa base (Argenmap Topográfico - IGN Argentina)
-    L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_oscuro@EPSG%3A3857@png/{z}/{x}/{y}.png', {
+    L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/argenmap_oscuro@EPSG%3A3857@png/{z}/{x}/{y}.png', {
     attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
     minZoom: 3,
     maxZoom: 18,
@@ -649,15 +649,29 @@
                             padding: 6
                         }
                     },
-                   tooltip: {
+                  tooltip: {
     titleFont: { size: 12 },
     bodyFont: { size: 11 },
     callbacks: {
         title: function(context) {
-            const mesesCompletos = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
-                                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            const idx = context[0].dataIndex;
-            return `${mesesCompletos[idx]} (1991-2020)`;
+            const mesesCompletos = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            return `${mesesCompletos[context[0].dataIndex]} (1991-2020)`;
+        },
+        label: function(context) {
+            // context.dataset.label ya contiene "Temp. media (°C)" o "Precipitación (mm)"
+            let label = context.dataset.label || '';
+            
+            // Limpiamos el label para sacar la unidad que viene entre paréntesis
+            // y la guardamos para ponerla al final.
+            let unidad = '';
+            const match = label.match(/\s*\(([^)]+)\)/);
+            if (match) {
+                unidad = match[1]; // "°C" o "mm"
+                label = label.replace(/\s*\([^)]+\)/, ''); // "Temp. media" o "Precipitación"
+            }
+            
+            // Formateamos: "Nombre = Valor Unidad"
+            return `${label} = ${context.formattedValue} ${unidad}`;
         }
     }
 }
