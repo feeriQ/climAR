@@ -404,11 +404,11 @@
     const map = L.map('map', { attributionControl: false, zoomControl: false }).setView(CENTER, ZOOM);
     
     // Capa de mapa base (Argenmap Topográfico - IGN Argentina)
-    L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_topo@EPSG%3A3857@png/{z}/{x}/{y}.png', {
-        attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
-        minZoom: 3,
-        maxZoom: 18,
-        tms: true
+    L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_oscuro@EPSG%3A3857@png/{z}/{x}/{y}.png', {
+    attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
+    minZoom: 3,
+    maxZoom: 18,
+    tms: true
     }).addTo(map);
     
     let todasLasEstaciones = [];
@@ -649,10 +649,18 @@
                             padding: 6
                         }
                     },
-                    tooltip: {
-                        titleFont: { size: 12 },
-                        bodyFont: { size: 11 }
-                    }
+                   tooltip: {
+    titleFont: { size: 12 },
+    bodyFont: { size: 11 },
+    callbacks: {
+        title: function(context) {
+            const mesesCompletos = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const idx = context[0].dataIndex;
+            return `${mesesCompletos[idx]} (1991-2020)`;
+        }
+    }
+}
                 },
                 scales: {
                     y: {
