@@ -318,7 +318,10 @@
     <br>
     <strong>Para más detalles consultar:</strong><br>
     Servicio Meteorológico Nacional [SMN] (2023). <em>Estadísticas Climatológicas Normales: República Argentina - Período 1991-2020</em>. SMN, 847 pp.<br>
-    <strong>URL del Repositorio SMN:</strong> <a href="https://repositorio.smn.gob.ar/handle/20.500.12160/2506" target="_blank" rel="noopener">https://repositorio.smn.gob.ar/handle/20.500.12160/2506</a>
+    <strong>URL del Repositorio SMN:</strong> <a href="https://repositorio.smn.gob.ar/handle/20.500.12160/2506" target="_blank" rel="noopener">https://repositorio.smn.gob.ar/handle/20.500.12160/2506</a><br>
+    <br>
+    <strong>Mapa base:</strong> Argenmap del Instituto Geográfico Nacional [IGN] - Argentina — <a href="https://www.ign.gob.ar/odc-12-Ortiz" target="_blank" rel="noopener">https://www.ign.gob.ar/</a><br>
+    <strong>Capa:</strong> Argenmap
 </div>
     </div>
 </div>
@@ -343,11 +346,11 @@ const ESTACIONES_CERRADAS = {
     const map = L.map('map', { attributionControl: false, zoomControl: false }).setView(CENTER, ZOOM);
     
     // Capa de mapa base (Argenmap - IGN Argentina)
-    L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png', {
-        attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
-        minZoom: 3,
-        maxZoom: 18
-    }).addTo(map);
+  L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_topo@EPSG%3A3857@png/{z}/{x}/{-y}.png', {
+    attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
+    minZoom: 3,
+    maxZoom: 18
+}).addTo(map);
     
     let todasLasEstaciones = [];
     let marcadores = [];
@@ -383,14 +386,14 @@ const ESTACIONES_CERRADAS = {
         className: 'custom-marker',
         html: `<div style="
             background-color: ${color};
-            width: 16px;
-            height: 16px;
+            width: 13px;
+            height: 13px;
             border-radius: 50%;
             border: 2px solid ${borde};
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.35);
         "></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
+        iconSize: [13, 13],
+        iconAnchor: [6.5, 6.5]
     });
 }
     
