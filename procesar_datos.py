@@ -1,6 +1,18 @@
 import json
 import re
 
+import unicodedata
+
+def normalizar(texto):
+    """Quita tildes, diéresis y convierte a mayúsculas"""
+    if not texto:
+        return ''
+    # Descompone caracteres acentuados y elimina los diacríticos
+    texto = unicodedata.normalize('NFKD', texto)
+    texto = ''.join(c for c in texto if not unicodedata.combining(c))
+    # Quita asteriscos y espacios extra
+    texto = texto.replace('*', '').strip().upper()
+    return texto
 
 def procesar_coordenadas(archivo):
     """Procesa el archivo de coordenadas del SMN."""
@@ -104,46 +116,43 @@ def normalizar(texto):
 
 
 def combinar_datos(datos_climaticos, coordenadas):
-    """Combina datos climáticos con coordenadas."""
+    """Combina datos climáticos con coordenadas (normalizando tildes)"""
     datos_combinados = []
     no_encontradas = []
-
-    coord_norm = {normalizar(k): (k, v) for k, v in coordenadas.items()}
-
+    
     for estacion_clima, variables in datos_climaticos.items():
-        estacion_norm = normalizar(estacion_clima)
+        estacion_busqueda = normalizar(estacion_clima)
         coordenada_encontrada = None
-
-        if estacion_norm in coord_norm:
-            coordenada_encontrada = coord_norm[estacion_norm][1]
-        else:
-            for norm_key, (_orig_key, coord_data) in coord_norm.items():
-                if estacion_norm in norm_key or norm_key in estacion_norm:
-                    coordenada_encontrada = coord_data
-                    break
-
+        
+        # Buscar coincidencia (con normalización)
+        for nombre_coord, coord_data in coordenadas.items():
+            nombre_coord_norm = normalizar(nombre_coord)
+            
+            if estacion_busqueda == nombre_coord_norm:
+                coordenada_encontrada = coord_data
+                break
+            
+            if estacion_busqueda in nombre_coord_norm or nombre_coord_norm in estacion_busqueda:
+                coordenada_encontrada = coord_data
+                break
+        
         if coordenada_encontrada:
-            provincia = coordenada_encontrada["provincia"]
-            if provincia == "ANTARTIDA":
-                provincia = "TIERRA DEL FUEGO"
-
-            datos_combinados.append(
-                {
-                    "nombre": estacion_clima,
-                    "lat": coordenada_encontrada["lat"],
-                    "lng": coordenada_encontrada["lng"],
-                    "altura": coordenada_encontrada["altura"],
-                    "provincia": provincia,
-                    "variables": variables,
-                }
-            )
+            datos_combinados.append({
+                'nombre': estacion_clima,
+                'lat': coordenada_encontrada['lat'],
+                'lng': coordenada_encontrada['lng'],
+                'altura': coordenada_encontrada['altura'],
+                'provincia': coordenada_encontrada['provincia'],
+                'variables': variables
+            })
         else:
             no_encontradas.append(estacion_clima)
-
+    
     if no_encontradas:
         print(f"\n⚠️ {len(no_encontradas)} estaciones sin coordenadas:")
         for est in no_encontradas:
-            
+            print(f"   - {est}")
+    
     return datos_combinados
 
 
