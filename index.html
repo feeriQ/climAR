@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>climAR_9120</title>
+    <title>climAR-9120</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -353,14 +353,14 @@
         <button class="btn-cerrar" onclick="toggleInfo()">✖</button>
         
         <h2>🌡️ climAR-9120</h2>
-       
+        
         <p style="font-size:14px; line-height:1.6;">
-    🌡️ 🌧️ Estadísticas Climatológicas Normales <strong>1991-2020</strong> descargadas del SMN (Servicio Meteorológico Nacional) de Argentina.
-</p>
+            🌡️ 🌧️ Estadísticas Climatológicas Normales <strong>1991-2020</strong> descargadas del SMN (Servicio Meteorológico Nacional) de Argentina.
+        </p>
 
-<p style="font-size:14px; line-height:1.6;">
-    🗺️ <strong id="info-total-estaciones">0</strong> estaciones meteorológicas, con entre <strong>4</strong> y <strong>8</strong> variables meteorológicas con datos cada una.
-</p>
+        <p style="font-size:14px; line-height:1.6;">
+            🗺️ <strong id="info-total-estaciones">0</strong> estaciones meteorológicas, con entre <strong>4</strong> y <strong>8</strong> variables meteorológicas con datos cada una.
+        </p>
         
         <h3>🚦 Estado de las estaciones</h3>
         <p style="font-size:13px;">
@@ -405,12 +405,12 @@
     
     const map = L.map('map', { attributionControl: false, zoomControl: false }).setView(CENTER, ZOOM);
     
-    // Capa de mapa base (Argenmap Topográfico - IGN Argentina)
+    // Capa de mapa base (Argenmap Oscuro - IGN Argentina)
     L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/argenmap_oscuro@EPSG%3A3857@png/{z}/{x}/{y}.png', {
-    attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
-    minZoom: 3,
-    maxZoom: 18,
-    tms: true
+        attribution: 'Instituto Geográfico Nacional (IGN, Argentina)',
+        minZoom: 3,
+        maxZoom: 18,
+        tms: true
     }).addTo(map);
     
     let todasLasEstaciones = [];
@@ -461,8 +461,8 @@
             `<option value="${v}">${v}</option>`
         ).join('');
         
-        const provinciaInfo = estacion.provincia ? `📍 ${estacion.provincia}` : '';
-        const alturaInfo = estacion.altura ? `🏔️ ${estacion.altura}m` : '';
+        const provinciaInfo = estacion.provincia ? `📍 Prov. ${estacion.provincia}` : '';
+        const alturaInfo = estacion.altura ? `🏔️ Elev. ${estacion.altura} msnm` : '';
         
         // Cartel de estado
         const cerrada = ESTACIONES_CERRADAS[estacion.nombre];
@@ -521,7 +521,6 @@
     // ============================================
     
     window.cambiarTab = function(uid, tab) {
-        // Cambiar clases de pestañas
         const popup = document.getElementById(`popup-${uid}`);
         if (!popup) return;
         
@@ -533,7 +532,6 @@
             v.classList.toggle('activo', v.id === `vista-${tab}-${uid}`);
         });
         
-        // Si es la pestaña de tabla, actualizarla
         if (tab === 'tabla') {
             actualizarTabla(uid);
         }
@@ -544,7 +542,6 @@
     // ============================================
     
     function dibujarClimograma(estacion, uid) {
-        // Buscar las 4 variables necesarias
         const tempMedia = estacion.variables['Temperatura (°C)'];
         const tempMax = estacion.variables['Temperatura máxima (°C)'];
         const tempMin = estacion.variables['Temperatura mínima (°C)'];
@@ -553,7 +550,6 @@
         const canvas = document.getElementById(`chart-${uid}`);
         if (!canvas) return;
         
-        // Armar datasets solo con las variables que existen
         const datasets = [];
         const faltantes = [];
         
@@ -620,7 +616,6 @@
             faltantes.push('Temp. mínima');
         }
         
-        // Nota si faltan variables
         const nota = document.getElementById(`nota-${uid}`);
         if (nota) {
             nota.textContent = faltantes.length > 0 
@@ -628,7 +623,6 @@
                 : '';
         }
         
-        // Crear gráfico
         new Chart(canvas, {
             data: {
                 labels: MESES,
@@ -651,32 +645,26 @@
                             padding: 6
                         }
                     },
-                  tooltip: {
-    titleFont: { size: 12 },
-    bodyFont: { size: 11 },
-    callbacks: {
-        title: function(context) {
-            const mesesCompletos = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            return `${mesesCompletos[context[0].dataIndex]} (1991-2020)`;
-        },
-        label: function(context) {
-            // context.dataset.label ya contiene "Temp. media (°C)" o "Precipitación (mm)"
-            let label = context.dataset.label || '';
-            
-            // Limpiamos el label para sacar la unidad que viene entre paréntesis
-            // y la guardamos para ponerla al final.
-            let unidad = '';
-            const match = label.match(/\s*\(([^)]+)\)/);
-            if (match) {
-                unidad = match[1]; // "°C" o "mm"
-                label = label.replace(/\s*\([^)]+\)/, ''); // "Temp. media" o "Precipitación"
-            }
-            
-            // Formateamos: "Nombre = Valor Unidad"
-            return `${label} = ${context.formattedValue} ${unidad}`;
-        }
-    }
-}
+                    tooltip: {
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 11 },
+                        callbacks: {
+                            title: function(context) {
+                                const mesesCompletos = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                                return `${mesesCompletos[context[0].dataIndex]} (1991-2020)`;
+                            },
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                let unidad = '';
+                                const match = label.match(/\s*\(([^)]+)\)/);
+                                if (match) {
+                                    unidad = match[1];
+                                    label = label.replace(/\s*\([^)]+\)/, '');
+                                }
+                                return `${label} = ${context.formattedValue} ${unidad}`;
+                            }
+                        }
+                    }
                 },
                 scales: {
                     y: {
@@ -716,7 +704,6 @@
     // ============================================
     
     window.actualizarTabla = function(uid) {
-        // Buscar la estación por uid (reemplazando de vuelta)
         const estacion = todasLasEstaciones.find(e => 
             e.nombre.replace(/[^a-zA-Z0-9]/g, '_') === uid
         );
@@ -728,7 +715,6 @@
         const variable = select.value;
         const valores = estacion.variables[variable] || [];
         
-        // Generar tabla
         let html = '<table><thead><tr><th>Mes</th>';
         MESES.forEach(m => {
             html += `<th>${m}</th>`;
@@ -743,7 +729,6 @@
         const tablaDiv = document.getElementById(`tabla-${uid}`);
         if (tablaDiv) tablaDiv.innerHTML = html;
         
-        // Estadísticas
         const validos = valores.filter(v => v !== null && !isNaN(v));
         const statsDiv = document.getElementById(`stats-${uid}`);
         if (statsDiv && validos.length > 0) {
@@ -776,34 +761,25 @@
         }
     };
     
-   function actualizarInfo() {
-    document.getElementById('info-total-estaciones').textContent = todasLasEstaciones.length;
-    
-    // Contar variables únicas (las que aparecen al menos en una estación)
-    const variablesUnicas = new Set();
-    todasLasEstaciones.forEach(e => {
-        if (e.variables) {
-            Object.keys(e.variables).forEach(v => variablesUnicas.add(v));
+    function actualizarInfo() {
+        document.getElementById('info-total-estaciones').textContent = todasLasEstaciones.length;
+        
+        // Conteo por provincia
+        const conteo = {};
+        todasLasEstaciones.forEach(e => {
+            const prov = e.provincia || 'SIN PROVINCIA';
+            conteo[prov] = (conteo[prov] || 0) + 1;
+        });
+        
+        // Lista de provincias
+        const provinciasOrdenadas = Object.keys(conteo).sort();
+        const lista = document.getElementById('info-lista-provincias');
+        if (lista) {
+            lista.innerHTML = provinciasOrdenadas.map(prov => 
+                `<li><strong>${prov}:</strong> ${conteo[prov]}</li>`
+            ).join('');
         }
-    });
-    document.getElementById('info-total-variables').textContent = variablesUnicas.size;
-    
-    // Conteo por provincia
-    const conteo = {};
-    todasLasEstaciones.forEach(e => {
-        const prov = e.provincia || 'SIN PROVINCIA';
-        conteo[prov] = (conteo[prov] || 0) + 1;
-    });
-    
-    // Lista de provincias
-    const provinciasOrdenadas = Object.keys(conteo).sort();
-    const lista = document.getElementById('info-lista-provincias');
-    if (lista) {
-        lista.innerHTML = provinciasOrdenadas.map(prov => 
-            `<li><strong>${prov}:</strong> ${conteo[prov]}</li>`
-        ).join('');
     }
-}
     
     // ============================================
     // 8. CARGAR DATOS Y CREAR MARCADORES
@@ -851,7 +827,6 @@
                 className: 'custom-popup'
             });
             
-            // Dibujar climograma al abrir el popup
             marker.on('popupopen', function() {
                 const uid = estacion.nombre.replace(/[^a-zA-Z0-9]/g, '_');
                 setTimeout(() => {
